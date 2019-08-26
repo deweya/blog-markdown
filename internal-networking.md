@@ -22,13 +22,13 @@ spec:
 ```
 
 ## How To Begin Troubleshooting
-The best way to begin troubleshooting is to <mark>oc rsh into the pod that is making the call</mark> to your target service. For example, if I have a deployment called rhel that is attempting to talk to another deployment called hello-world, then I would want to access the rhel pod to begin troubleshooting my networking error. For example:
+The best way to begin troubleshooting is to `oc rsh into the pod that is making the call` to your target service. For example, if I have a deployment called rhel that is attempting to talk to another deployment called hello-world, then I would want to access the rhel pod to begin troubleshooting my networking error. For example:
 
 ```bash
 oc rsh rhel-2-fqjbw -n my-namespace
 ```
 
-Once inside the pod, <mark>attempt running “curl -v”</mark> against the endpoint your pod is trying to reach. This will give verbose output and will often reveal the issue behind your networking error. The table below gives an overview of some sample curl -v output and some possible errors associated with it.
+Once inside the pod, `attempt running “curl -v"` against the endpoint your pod is trying to reach. This will give verbose output and will often reveal the issue behind your networking error. The table below gives an overview of some sample curl -v output and some possible errors associated with it.
 
 | curl -v Output | Possible Errors |
 | -------------- | --------------- |
@@ -42,7 +42,7 @@ Note that this only covers some of the most common networking errors that I have
 Let’s begin looking at some of the most common errors around OpenShift networking.
 
 ## Service Does Not Exist
-First things first, <mark>you need a service object</mark> to be able to route traffic to the desired app. You can quickly create a service with the “oc expose” command:
+First things first, `you need a service object` to be able to route traffic to the desired app. You can quickly create a service with the “oc expose” command:
 
 ```bash
 oc expose deployment hello-world # For Deployment objects
@@ -56,7 +56,7 @@ oc apply -f $PATH_TO_SERVICE_YAML
 ```
 
 ## Target Hostname Is Incorrect
-The most common networking issues are caused by attempting to reference an incorrect host name. The host name of an app will be determined by the name of its service. Depending on whether or not the source and target apps are in the same namespace, the target host name will be either <mark>\<service-name></mark> or <mark>\<service-name>.\<namespace-name></mark>.
+The most common networking issues are caused by attempting to reference an incorrect host name. The host name of an app will be determined by the name of its service. Depending on whether or not the source and target apps are in the same namespace, the target host name will be either `<service-name>` or `<service-name>.<namespace-name>`.
 
 ### Source and Target Apps in the Same Namespace
 If your source and target apps are in the same OpenShift namespace, then the target hostname will simply be the name of the target service. Using the hello-world service above as an example, any app trying to talk to the hello-world app would simply use the host name **hello-world**.
@@ -65,7 +65,7 @@ If your source and target apps are in the same OpenShift namespace, then the tar
 The target host name will be a little different if the source and target apps live in different namespaces. In this case the target host name will be \<service-name>.\<namespace-name>. Using the hello-world service above as an example, any app trying to talk to the hello-world app from a different namespace would use the host name **hello-world.my-namespace**.
 
 ## SDN Isolation Policy is Blocking Traffic
-The OpenShift SDN supports [three different modes for networking](https://docs.openshift.com/container-platform/4.1/networking/openshift-sdn/about-openshift-sdn.html), with the default being network policy in OpenShift 4. It could be possible that your mode’s <mark>isolation policy has not been configured</mark> to allow traffic to reach your app.
+The OpenShift SDN supports [three different modes for networking](https://docs.openshift.com/container-platform/4.1/networking/openshift-sdn/about-openshift-sdn.html), with the default being network policy in OpenShift 4. It could be possible that your mode’s `isolation policy has not been configured` to allow traffic to reach your app.
 
 If using *network policy* mode, ensure that a [NetworkPolicy](https://docs.openshift.com/container-platform/4.1/networking/configuring-networkpolicy.html) object has been created that allows traffic to reach your target app.
 
@@ -74,7 +74,7 @@ If using *multitenant* mode, ensure that your source and target apps’ namespac
 Your pods should already be able to reach each other with *subnet* mode.
 
 ## Service Selector is Incorrect
-The most common way to route traffic with a service is to use a label selector that matches a label on the app’s pods. In the example service above, the hello-world service will route traffic to pods with a label **app=hello-world**. Make sure that the target Deployment or DeploymentConfig sets a <mark>label on each pod that matches the service selector</mark> and vice versa.
+The most common way to route traffic with a service is to use a label selector that matches a label on the app’s pods. In the example service above, the hello-world service will route traffic to pods with a label **app=hello-world**. Make sure that the target Deployment or DeploymentConfig sets a `label on each pod that matches the service selector` and vice versa.
 
 Here’s part of an example Deployment that sets the “app=hello-world” label that the service selector expects on each pod. Notice the “template.metadata.labels.app” value, which sets the pod “app=hello-world” label.
 
@@ -118,10 +118,10 @@ spec:
   clusterIP: None
 ```
 
-This is actually a [headless service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services), meaning that the service is not assigned an IP address. Headless services have many different use cases, but if you’re running a simple architecture with the intention of a Deployment or DeploymentConfig being load-balanced by a service, you may have accidentally created a headless service. Check that the service has a clusterIP allocated with “oc get svc hello-world -o yaml”. If you can verify that the clusterIP is None, <mark>delete the service and apply it again without a clusterIP spec</mark>.
+This is actually a [headless service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services), meaning that the service is not assigned an IP address. Headless services have many different use cases, but if you’re running a simple architecture with the intention of a Deployment or DeploymentConfig being load-balanced by a service, you may have accidentally created a headless service. Check that the service has a clusterIP allocated with “oc get svc hello-world -o yaml”. If you can verify that the clusterIP is None, `delete the service and apply it again without a clusterIP spec`.
 
 ## Service Ports are Incorrect or are Not Exposed
-Part of a service’s job is to identify the **port** and **targetPorts** of an application. The service will accept traffic to port “port” and will redirect to port “targetPort” on the running container. Another common issue around internal traffic is that these <mark>port values can be either incorrect or unexposed by the container</mark>.
+Part of a service’s job is to identify the **port** and **targetPorts** of an application. The service will accept traffic to port “port” and will redirect to port “targetPort” on the running container. Another common issue around internal traffic is that these `port values can be either incorrect or unexposed by the container`.
 
 ### Service Port is Incorrect
 The hello-world service above specifies port 443 and targetPort 8443:
@@ -177,10 +177,10 @@ spec:
 
 Notice at the bottom of the deployment the “ports:” stanza. Since the service is referring to the “https” targetPort, the deployment must also have a corresponding “https” port to route traffic to the desired port. In this case “https” endpoint will accept traffic at port 443 and reroute to port 8443, which is specified by the **containerPort** of the Deployment.
 
-If your service uses a name instead of a number for its targetPort, <mark>make sure that name is also specified on the Deployment object</mark>.
+If your service uses a name instead of a number for its targetPort, `make sure that name is also specified on the Deployment object`.
 
 ### Container does not Expose Targetport
-This is one that is often overlooked. Sometimes the issue is not an OpenShift problem but instead has to do with the running container. If you know that the port and targetPort are specified and configured properly, then <mark>the running container may not be exposing the targetPort</mark>.
+This is one that is often overlooked. Sometimes the issue is not an OpenShift problem but instead has to do with the running container. If you know that the port and targetPort are specified and configured properly, then `the running container may not be exposing the targetPort`.
 
 Take the following Spring Boot **application.properties**, for example:
 
